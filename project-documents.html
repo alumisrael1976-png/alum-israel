@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>אלום ישראל - מסמכים והזמנות</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#17202a}header{background:#111827;color:white;padding:18px}main{max-width:900px;margin:auto;padding:16px}.card{background:white;border-radius:16px;padding:16px;margin-bottom:14px}input,select,textarea,button{width:100%;padding:12px;margin:6px 0;border:1px solid #d1d5db;border-radius:10px;font-size:16px}.primary{background:#111827;color:white;font-weight:bold}.doc{border:1px solid #ddd;border-radius:12px;padding:12px;margin-top:10px}.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.cats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cat{background:#eef2ff;padding:10px;border-radius:10px;text-align:center;font-weight:bold}
+</style></head><body>
+<header><h2>אלום ישראל</h2><div>מרכז מסמכים והזמנות לפי פרויקט</div></header><main>
+<section class="card"><b>פרויקט</b><input id="project" placeholder="שם הפרויקט"><div class="cats"><div class="cat">דפי חיתוך</div><div class="cat">הזמנת אלומיניום</div><div class="cat">הזמנת זכוכית</div><div class="cat">הזמנת פרזול</div><div class="cat">הזמנת תריסים</div><div class="cat">אביזרים נלווים</div></div></section>
+<section class="card"><h2>הוספת מסמך</h2><select id="category"><option>דפי חיתוך</option><option>הזמנת אלומיניום</option><option>הזמנת זכוכית</option><option>הזמנת פרזול</option><option>הזמנת תריסים</option><option>אביזרים נלווים</option></select><input id="supplier" placeholder="שם הספק"><input id="title" placeholder="כותרת המסמך"><input id="file" type="file"><textarea id="note" placeholder="הערות"></textarea><button class="primary" onclick="addDoc()">שמור מסמך</button></section>
+<section class="card"><h2>מסמכי הפרויקט</h2><div id="docs"></div></section></main>
+<script>
+const KEY='alum_project_documents_local';let docs=JSON.parse(localStorage.getItem(KEY)||'[]');
+function save(){localStorage.setItem(KEY,JSON.stringify(docs));render()}
+function addDoc(){let p=project.value.trim(),t=title.value.trim(),f=file.files[0];if(!p||!t){alert('יש למלא פרויקט וכותרת');return}docs.unshift({id:Date.now(),project:p,title:t,category:category.value,supplier:supplier.value,note:note.value,file:f?f.name:'',status:'טיוטה',date:new Date().toLocaleDateString('he-IL')});save();title.value='';note.value='';file.value=''}
+function setStatus(id,s){let d=docs.find(x=>x.id===id);if(d){d.status=s;save()}}
+function removeDoc(id){if(confirm('למחוק?')){docs=docs.filter(x=>x.id!==id);save()}}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function render(){let p=project.value.trim(),a=p?docs.filter(d=>d.project===p):docs;docsEl=document.getElementById('docs');docsEl.innerHTML=a.length?a.map(d=>`<div class="doc"><b>${esc(d.title)}</b><div>${esc(d.category)} · ${esc(d.supplier||'ללא ספק')} · ${d.date}</div>${d.file?`<div>📎 ${esc(d.file)}</div>`:''}<p>${esc(d.note||'')}</p><div>סטטוס: ${d.status}</div><div class="actions"><button onclick="setStatus(${d.id},'הוזמן')">הוזמן</button><button onclick="setStatus(${d.id},'התקבל')">התקבל</button><button onclick="removeDoc(${d.id})">מחיקה</button></div></div>`).join(''):'אין מסמכים עדיין'}
+project.addEventListener('input',render);render();
+</script></body></html>
